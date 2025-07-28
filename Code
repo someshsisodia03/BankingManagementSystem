@@ -1,0 +1,118 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Base class for bank accounts (abstraction + encapsulation)
+class Account {
+protected:
+    string accNo;
+    string holderName;
+    double balance;
+
+public:
+    Account(string no, string name, double bal) : accNo(no), holderName(name), balance(bal) {}
+
+    // Pure virtual function for showing details — each account type implements it differently
+    virtual void showDetails() = 0;
+
+    virtual void deposit(double amt) {
+        balance += amt;
+        cout << "Deposited ₹" << amt << ". New balance: ₹" << balance << "\n";
+    }
+
+    virtual void withdraw(double amt) {
+        if (amt > balance) {
+            cout << "Oops! Not enough balance.\n";
+        } else {
+            balance -= amt;
+            cout << "Withdrawn ₹" << amt << ". Balance left: ₹" << balance << "\n";
+        }
+    }
+
+    string getAccNo() const { return accNo; }
+    string getHolderName() const { return holderName; }
+};
+
+// Saving Account inherits from Account
+class SavingAccount : public Account {
+public:
+    SavingAccount(string no, string name, double bal) : Account(no, name, bal) {}
+
+    void showDetails() override {
+        cout << "[Saving] Acc No: " << accNo << ", Holder: " << holderName 
+             << ", Balance: ₹" << balance << "\n";
+    }
+};
+
+// Current Account inherits from Account
+class CurrentAccount : public Account {
+public:
+    CurrentAccount(string no, string name, double bal) : Account(no, name, bal) {}
+
+    void showDetails() override {
+        cout << "[Current] Acc No: " << accNo << ", Holder: " << holderName 
+             << ", Balance: ₹" << balance << "\n";
+    }
+};
+
+// Bank class to keep track of all accounts
+class Bank {
+    vector<Account*> accounts;
+
+public:
+    ~Bank() {
+        for (auto acc : accounts) delete acc;
+    }
+
+    void addSavingAccount(string no, string name, double bal) {
+        accounts.push_back(new SavingAccount(no, name, bal));
+        cout << "Created Saving Account for " << name << "\n";
+    }
+
+    void addCurrentAccount(string no, string name, double bal) {
+        accounts.push_back(new CurrentAccount(no, name, bal));
+        cout << "Created Current Account for " << name << "\n";
+    }
+
+    Account* findAccount(string no) {
+        for (auto acc : accounts) {
+            if (acc->getAccNo() == no) return acc;
+        }
+        return nullptr;
+    }
+
+    void depositToAccount(string no, double amt) {
+        Account* acc = findAccount(no);
+        if (acc) acc->deposit(amt);
+        else cout << "Account not found: " << no << "\n";
+    }
+
+    void withdrawFromAccount(string no, double amt) {
+        Account* acc = findAccount(no);
+        if (acc) acc->withdraw(amt);
+        else cout << "Account not found: " << no << "\n";
+    }
+
+    void showAll() {
+        cout << "\n--- List of all accounts ---\n";
+        for (auto acc : accounts) {
+            acc->showDetails();
+        }
+    }
+};
+
+int main() {
+    Bank myBank;
+
+    // Create some accounts
+    myBank.addSavingAccount("S101", "Somesh", 5000);
+    myBank.addCurrentAccount("C201", "Sara", 10000);
+
+    // Do some transactions
+    myBank.depositToAccount("S101", 1500);
+    myBank.withdrawFromAccount("C201", 2000);
+
+    // Show all accounts info
+    myBank.showAll();
+
+    return 0;
+}
